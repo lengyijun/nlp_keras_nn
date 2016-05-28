@@ -7,20 +7,25 @@ import numpy
 
 if __name__ == '__main__':
     left_branch=Input(shape=(1,100,100,),name="arg1_input")
-    left_branch_convo=(Convolution2D(32,4,99,))(left_branch)
-    # left_branch_acti=(Activation("tanh"))(left_branch_convo)
-    left_branch_pool=(MaxPooling2D(pool_size=(2,1)))(left_branch_convo)
+    left_branch_convo=(Convolution2D(32,2,99,))(left_branch)
+    left_branch_pool=(MaxPooling2D(pool_size=(2,2)))(left_branch_convo)
     left_branch_flatten=(Flatten())(left_branch_pool)
+
+    left_branch_convo_3=(Convolution2D(32,3,99,))(left_branch)
+    left_branch_pool_3=(MaxPooling2D(pool_size=(2,2)))(left_branch_convo_3)
+    left_branch_flatten_3=(Flatten())(left_branch_pool_3)
 
 
     right_branch=Input(shape=(1,100,100,),name="arg2_input")
-    right_branch_convo=(Convolution2D(32,4,99,))(right_branch)
-    # right_branch_acti=(Activation("tanh"))(right_branch_convo)
-    right_branch_pool=(MaxPooling2D(pool_size=(2,1)))(right_branch_convo)
+    right_branch_convo=(Convolution2D(32,2,99,))(right_branch)
+    right_branch_pool=(MaxPooling2D(pool_size=(2,2)))(right_branch_convo)
     right_branch_flatten=(Flatten())(right_branch_pool)
 
-    merged=merge([left_branch_flatten,right_branch_flatten],mode="concat")
-    # merged_dropout=(Dropout(0.9))(merged)
+    right_branch_convo_3=(Convolution2D(32,3,99,))(right_branch)
+    right_branch_pool_3=(MaxPooling2D(pool_size=(2,2)))(right_branch_convo_3)
+    right_branch_flatten_3=(Flatten())(right_branch_pool_3)
+
+    merged=merge([left_branch_flatten,left_branch_flatten_3,right_branch_flatten,right_branch_flatten_3],mode="concat")
     merged_dense=(Dense(12,name="cate"))(merged) #12 category
 
     final_model=Model(input=[left_branch,right_branch],output=[merged_dense])
@@ -38,7 +43,6 @@ if __name__ == '__main__':
     f=open("label","rb")
     label=cPickle.load(f)
     f.close()
-
 
     final_model.compile(optimizer="rmsprop",loss="sparse_categorical_crossentropy",metrics=["accuracy"])
     final_model.fit({"arg1_input":arg1,"arg2_input":arg2},{"cate":label})
